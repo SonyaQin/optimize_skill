@@ -1,0 +1,78 @@
+{
+  "name": "auto-optimizer",
+  "version": "1.0.0",
+  "description": "AI-powered infinite optimization loop with statistical benchmarking, graveyard of failed attempts, and Git sandbox isolation",
+  "author": "pengfu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pengfu/auto-optimizer"
+  },
+  "keywords": [
+    "optimization",
+    "performance",
+    "benchmarking",
+    "ai",
+    "automation"
+  ],
+  "license": "MIT",
+  "skills": [
+    {
+      "name": "optimize",
+      "path": ".claude/skills/optimize/SKILL.md",
+      "description": "AI performance optimization loop - find optimizations, benchmark, accept or rollback",
+      "userInvocable": true,
+      "argumentHint": "file or directory to optimize"
+    }
+  ],
+  "tools": [
+    {
+      "name": "generate_tests",
+      "path": ".claude/skills/optimize/tools/generate_tests.py",
+      "description": "Generate unit tests and performance benchmarks for source files"
+    },
+    {
+      "name": "run_benchmark",
+      "path": ".claude/skills/optimize/tools/run_benchmark.py",
+      "description": "Run statistical benchmarks with Welch's t-test and alternating A/B pattern"
+    },
+    {
+      "name": "verify_semantics",
+      "path": ".claude/skills/optimize/tools/verify_semantics.py",
+      "description": "Verify semantic preservation via unit tests"
+    },
+    {
+      "name": "propose_patch",
+      "path": ".claude/skills/optimize/tools/propose_patch.py",
+      "description": "Generate optimization proposals as unified diffs"
+    }
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Bash(git worktree:*)",
+      "Bash(git apply:*)",
+      "Bash(git merge:*)",
+      "Skill(optimize)",
+      "Skill(optimize:*)"
+    ]
+  },
+  "dependencies": {
+    "python": ">=3.8",
+    "packages": [
+      "scipy>=1.5.0"
+    ]
+  },
+  "engines": {
+    "claude-code": ">=1.0.0"
+  }
+}

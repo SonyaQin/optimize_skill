@@ -52,7 +52,47 @@ The key insight: **LLMs have limited context and will inevitably forget rules or
 
 ## Installation
 
-The skill is already installed in `.claude/skills/optimize/`.
+### From Claude Code Marketplace
+
+Install directly from the Git repository URL:
+
+```bash
+# In Claude Code, run:
+/install https://github.com/pengfu/auto-optimizer
+```
+
+Or add to your project's `.claude/settings.local.json`:
+
+```json
+{
+  "marketplace": [
+    "https://github.com/pengfu/auto-optimizer"
+  ]
+}
+```
+
+### Manual Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/pengfu/auto-optimizer.git
+```
+
+2. Copy the skill to your project:
+```bash
+cp -r auto-optimizer/.claude/skills/optimize your-project/.claude/skills/
+```
+
+3. Install Python dependencies:
+```bash
+pip install scipy
+```
+
+### Requirements
+
+- Python 3.8+
+- Git
+- scipy (optional, for statistical tests)
 
 ## Usage
 
@@ -88,17 +128,25 @@ python .claude/skills/optimize/orchestrator.py <target> --status
 ## File Structure
 
 ```
-.claude/skills/optimize/
-├── SKILL.md              # Skill definition for Claude Code
-├── README.md             # This documentation
-├── orchestrator.py       # Core infinite loop scheduler
-├── workspace_manager.py  # Git operations with sandbox isolation
-├── graveyard_manager.py  # Failed optimization records
-└── tools/
-    ├── generate_tests.py   # Generate unit tests and benchmarks
-    ├── propose_patch.py    # Generate code diffs
-    ├── verify_semantics.py # Semantic verification via unit tests
-    └── run_benchmark.py    # Statistical benchmark execution
+auto-optimizer/
+├── claude.json                   # Plugin manifest for marketplace
+├── README.md                     # This documentation
+├── LICENSE                       # MIT License
+└── .claude/
+    └── skills/
+        └── optimize/
+            ├── SKILL.md              # Skill definition for Claude Code
+            ├── README.md             # Detailed skill documentation
+            ├── __init__.py           # Python package init
+            ├── orchestrator.py       # Core infinite loop scheduler
+            ├── workspace_manager.py  # Git operations with sandbox isolation
+            ├── graveyard_manager.py  # Failed optimization records
+            └── tools/
+                ├── __init__.py
+                ├── generate_tests.py   # Generate unit tests and benchmarks
+                ├── propose_patch.py    # Generate code diffs
+                ├── verify_semantics.py # Semantic verification via unit tests
+                └── run_benchmark.py    # Statistical benchmark execution
 ```
 
 ## State Files

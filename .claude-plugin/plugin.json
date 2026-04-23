@@ -1,9 +1,0 @@
-{
-  "name": "optimize-loop",
-  "version": "1.0.0",
-  "description": "AI自动性能优化循环 - 自动寻找优化点、测试、接受或回滚",
-  "author": {
-    "name": "pengfu"
-  },
-  "license": "MIT"
-}
