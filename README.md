@@ -50,6 +50,68 @@ The key insight: **LLMs have limited context and will inevitably forget rules or
 - Main branch is never directly modified
 - Failed experiments are completely discarded
 
+## Supported Languages
+
+The optimizer supports multiple programming languages with varying levels of functionality:
+
+| Language | Function Parsing | Unit Tests | Benchmark | Semantic Verification |
+|----------|-----------------|------------|-----------|----------------------|
+| **Python** | ✅ Full | ✅ pytest | ✅ | ✅ |
+| **C/C++** | ✅ Full | ✅ Google Test | ✅ Google Benchmark | ⚠️ Custom command |
+| **JavaScript** | ✅ Full | ⚠️ Jest/Mocha | ⚠️ Basic | ⚠️ npm test |
+| **TypeScript** | ✅ Full | ⚠️ Jest | ⚠️ Basic | ⚠️ npm test |
+| **Go** | ✅ Full | ⚠️ go test | ⚠️ Basic | ⚠️ go test |
+| **Rust** | ✅ Full | ⚠️ cargo test | ⚠️ Basic | ⚠️ cargo test |
+| **Java** | ✅ Full | ⚠️ JUnit | ⚠️ JMH | ⚠️ mvn test |
+
+### Language-Agnostic Features
+
+These core features work for **all languages**:
+
+- ✅ Git sandbox isolation (worktrees)
+- ✅ Graveyard of failed optimizations
+- ✅ Statistical benchmarking (Welch's t-test)
+- ✅ A/B alternating test pattern
+- ✅ Diff generation and application
+
+### C/C++ Setup
+
+```bash
+# Ubuntu/Debian
+sudo apt install libgtest-dev libbenchmark-dev
+
+# macOS
+brew install googletest google-benchmark
+
+# Generate tests
+python .claude/skills/optimize/tools/generate_tests.py src/sort.cpp
+
+# Build and run tests
+g++ -std=c++17 .unit_tests/test_sort.cpp -lgtest -lgtest_main -pthread -o test_runner
+./test_runner
+```
+
+### Custom Test Commands
+
+For languages other than Python, configure custom test commands:
+
+```bash
+# C++ with CMake
+python orchestrator.py src/ --test-command "ctest --output-on-failure"
+
+# JavaScript/TypeScript
+python orchestrator.py src/ --test-command "npm test"
+
+# Go
+python orchestrator.py src/ --test-command "go test ./..."
+
+# Rust
+python orchestrator.py src/ --test-command "cargo test"
+
+# Java
+python orchestrator.py src/ --test-command "mvn test"
+```
+
 ## Installation
 
 ### From Claude Code Marketplace
