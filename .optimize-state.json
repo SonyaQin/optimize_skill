@@ -1,0 +1,12 @@
+{
+  "iteration": 0,
+  "accepted": [],
+  "rejected": [],
+  "pending": [
+    "early_termination_optimization",
+    "local_variable_caching",
+    "reduce_range_overhead"
+  ],
+  "baseline": null,
+  "current": null
+}
