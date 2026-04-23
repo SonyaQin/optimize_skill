@@ -58,7 +58,7 @@ Install directly from the Git repository URL:
 
 ```bash
 # In Claude Code, run:
-/install https://github.com/pengfu/auto-optimizer
+/install https://github.com/SonyaQin/optimize_skill
 ```
 
 Or add to your project's `.claude/settings.local.json`:
@@ -66,7 +66,7 @@ Or add to your project's `.claude/settings.local.json`:
 ```json
 {
   "marketplace": [
-    "https://github.com/pengfu/auto-optimizer"
+    "https://github.com/SonyaQin/optimize_skill"
   ]
 }
 ```
@@ -75,7 +75,7 @@ Or add to your project's `.claude/settings.local.json`:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/pengfu/auto-optimizer.git
+git clone https://github.com/SonyaQin/optimize_skill.git
 ```
 
 2. Copy the skill to your project:

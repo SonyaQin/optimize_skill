@@ -2,10 +2,10 @@
   "name": "auto-optimizer",
   "version": "1.0.0",
   "description": "AI-powered infinite optimization loop with statistical benchmarking, graveyard of failed attempts, and Git sandbox isolation",
-  "author": "pengfu",
+  "author": "SonyaQin",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pengfu/auto-optimizer"
+    "url": "https://github.com/SonyaQin/optimize_skill"
   },
   "keywords": [
     "optimization",
