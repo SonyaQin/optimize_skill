@@ -1,125 +1,286 @@
-# Optimize Loop - Claude Code Skill
+# Auto-Optimizer Skill
 
-AI自动性能优化循环Skill，实现无限迭代的代码性能优化。
+A robust, infinite-loop performance optimization system for Claude Code that treats the LLM as a "stateless function" while a Python orchestrator manages all state, preventing the common pitfalls of LLM-based automation.
 
-## 功能
+## Architecture
 
-- 自动分析代码寻找优化点
-- 实现优化并运行benchmark测试
-- AI判断性能提升是否显著
-- 显著则接受，否则回滚代码
-- 无限循环直到手动停止
+The key insight: **LLMs have limited context and will inevitably forget rules or repeat mistakes in long-running loops.** The solution is to use:
 
-## 安装
+- **Stateful Orchestrator (Python)** - Manages state, coordinates phases, persists data
+- **Stateless LLM** - Receives complete context, outputs single optimization proposals
+- **Git as State Machine** - Single source of truth for code state
 
-### 方式1：从本地目录安装
-
-在Claude Code中执行：
 ```
-/plugin install /Users/wangshiqin/Desktop/pengfu
+┌─────────────────────────────────────────────────────────────────┐
+│                     ORCHESTRATOR (Stateful)                      │
+│                                                                  │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │
+│  │ Phase 1  │─▶│ Phase 2  │─▶│ Phase 3  │─▶│ Phase 4  │─┐      │
+│  │Env Prep  │  │Propose   │  │Verify    │  │Benchmark │ │      │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘ │      │
+│       ▲                                          │       │      │
+│       └──────────────────────────────────────────┘       │      │
+│                                                          ▼      │
+│                                                   ┌──────────┐  │
+│                                                   │ Phase 5  │  │
+│                                                   │Persist   │  │
+│                                                   └──────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### 方式2：从Git仓库安装
+## Key Features
+
+### 1. Dual-Track Verification
+- **Unit Tests**: Verify semantic behavior is preserved
+- **Benchmarks**: Measure performance with statistical rigor
+- Both must pass for an optimization to be accepted
+
+### 2. Statistical Benchmarking
+- A/B/A/B alternating pattern to eliminate time-based noise
+- Welch's t-test for comparing means with unequal variances
+- Requires BOTH p-value < 0.05 AND improvement > threshold
+
+### 3. Graveyard of Failed Optimizations
+- Records every failed attempt with reason and diff
+- Injects warnings into LLM prompts to prevent repetition
+- Prevents the "Amnesia Loop" problem
+
+### 4. Git Sandbox Isolation
+- Every optimization runs in an isolated Git worktree
+- Main branch is never directly modified
+- Failed experiments are completely discarded
+
+## Installation
+
+The skill is already installed in `.claude/skills/optimize/`.
+
+## Usage
+
+### Basic Usage
+
+Invoke the skill from Claude Code:
+
+```
+/optimize <file-or-directory>
+```
+
+### Configuration Options
+
+The orchestrator supports various configuration options:
 
 ```bash
-# 初始化git仓库
-git init
-git add .
-git commit -m "Initial commit"
-
-# 推送到远程仓库后
-/plugin marketplace add <your-username>/pengfu
-/plugin install optimize-loop
+# Run with custom settings
+python .claude/skills/optimize/orchestrator.py <target> \
+    --max-iterations 100 \
+    --benchmark-iterations 10 \
+    --significance 0.05 \
+    --improvement-threshold 2.0 \
+    --test-command "pytest" \
+    --benchmark-command "python benchmark.py"
 ```
 
-## 使用方法
+### Check Status
 
-在Claude Code中执行：
-```
-/optimize [目标文件或目录]
-```
-
-如果不指定目标，默认优化整个项目。
-
-## 工作流程
-
-```
-┌──────────────────────────────────────┐
-│                                      │
-│  ┌─────────────┐                     │
-│  │ 保存检查点   │                     │
-│  └──────┬──────┘                     │
-│         ↓                            │
-│  ┌─────────────┐                     │
-│  │ 分析优化点   │                     │
-│  └──────┬──────┘                     │
-│         ↓                            │
-│  ┌─────────────┐                     │
-│  │ 实现优化    │                     │
-│  └──────┬──────┘                     │
-│         ↓                            │
-│  ┌─────────────┐                     │
-│  │ 运行测试    │                     │
-│  └──────┬──────┘                     │
-│         ↓                            │
-│  ┌─────────────┐                     │
-│  │ 运行Benchmark│                    │
-│  └──────┬──────┘                     │
-│         ↓                            │
-│  ┌─────────────┐                     │
-│  │ 判断提升    │                     │
-│  └──────┬──────┘                     │
-│         ↓                            │
-│    ┌────┴────┐                       │
-│    ↓         ↓                       │
-│  显著      不显著                     │
-│    │         │                       │
-│    ↓         ↓                       │
-│  提交     回滚                        │
-│    │         │                       │
-│    └────┬────┘                       │
-│         │                            │
-│         ↓                            │
-│    继续循环...                        │
-│                                      │
-└──────────────────────────────────────┘
+```bash
+python .claude/skills/optimize/orchestrator.py <target> --status
 ```
 
-## 状态文件
+## File Structure
 
-优化过程记录在 `.optimize-state.json`：
+```
+.claude/skills/optimize/
+├── SKILL.md              # Skill definition for Claude Code
+├── README.md             # This documentation
+├── orchestrator.py       # Core infinite loop scheduler
+├── workspace_manager.py  # Git operations with sandbox isolation
+├── graveyard_manager.py  # Failed optimization records
+└── tools/
+    ├── generate_tests.py   # Generate unit tests and benchmarks
+    ├── propose_patch.py    # Generate code diffs
+    ├── verify_semantics.py # Semantic verification via unit tests
+    └── run_benchmark.py    # Statistical benchmark execution
+```
+
+## State Files
+
+### `.optimizer_state.json`
+
+Tracks the current state of the optimization loop:
 
 ```json
 {
-  "iteration": 10,
-  "accepted_optimizations": [...],
-  "rejected_optimizations": [...],
-  "pending_optimizations": [...],
-  "baseline_benchmark": {...},
-  "current_benchmark": {...}
+  "iteration": 42,
+  "total_attempted": 45,
+  "total_accepted": 3,
+  "total_rejected": 42,
+  "current_target": "src/parser.py",
+  "current_phase": "benchmarking",
+  "total_improvement": 12.5,
+  "baseline_benchmark": {"mean": 1.5, "stdev": 0.1},
+  "current_benchmark": {"mean": 1.2, "stdev": 0.1}
 }
 ```
 
-## 示例
+### `optimization_graveyard.json`
+
+Records failed optimization attempts:
+
+```json
+{
+  "version": 1,
+  "entries": [
+    {
+      "timestamp": "2024-01-01T12:00:00",
+      "file_path": "src/parser.py",
+      "diff_hash": "a1b2c3d4",
+      "failure_type": "unit_test",
+      "failure_reason": "Edge case output changed",
+      "optimization_type": "caching"
+    }
+  ]
+}
+```
+
+## Pitfalls Addressed
+
+### 1. Behavior Drift & Overfitting
+**Problem**: AI removes error handling or hardcodes values to improve benchmarks.
+
+**Solution**: Dual-track verification with unit tests that must pass before any benchmark is run.
+
+### 2. Benchmark Noise
+**Problem**: CPU variance causes false positives in performance measurement.
+
+**Solution**: Statistical hypothesis testing with Welch's t-test, alternating A/B/A/B pattern, and minimum improvement thresholds.
+
+### 3. Amnesia Loop
+**Problem**: LLM repeatedly proposes the same failed optimization.
+
+**Solution**: Graveyard of failed attempts, injected into prompts as warnings.
+
+### 4. Workspace Corruption
+**Problem**: Failed optimizations leave the codebase in a broken state.
+
+**Solution**: Git worktree isolation - every experiment runs in a sandbox.
+
+## Parallel Optimization (Future)
+
+The architecture supports parallel exploration:
+
+1. Orchestrator spawns multiple LLM requests with different optimization focuses
+2. Each proposal is tested in parallel Git worktrees
+3. Unit tests run in parallel
+4. Benchmarks are serialized (CPU contention would skew results)
+
+## Customization
+
+### Test Command
+
+Set a custom test command:
 
 ```bash
-# 在Claude Code中
-/optimize bubble_sort.py
+export OPTIMIZER_TEST_COMMAND="npm test"
+# or
+python orchestrator.py --test-command "npm test"
 ```
 
-输出示例：
-```
-=== 优化循环报告 ===
-迭代次数: 5
-成功优化: 2
-失败尝试: 3
-当前性能提升: 15.3%
-下一步: 使用更高效的排序算法
+### Benchmark Command
+
+Set a custom benchmark command:
+
+```bash
+export OPTIMIZER_BENCHMARK_COMMAND="python -m timeit -n 1000 'main()'"
+# or
+python orchestrator.py --benchmark-command "python benchmark.py"
 ```
 
-## 注意事项
+### Thresholds
 
-1. 确保代码已提交到git，以便回滚
-2. 优化过程可能持续很长时间
-3. 可随时使用 Ctrl+C 停止
-4. 所有优化都会记录在状态文件中
+Adjust acceptance criteria:
+
+```bash
+# More stringent: require 5% improvement
+python orchestrator.py --improvement-threshold 5.0
+
+# More permissive p-value threshold
+python orchestrator.py --significance 0.01
+```
+
+## API Reference
+
+### WorkspaceManager
+
+```python
+from workspace_manager import WorkspaceManager
+
+ws = WorkspaceManager(repo_root)
+
+# Create isolated worktree
+success, worktree = ws.create_isolated_worktree()
+
+# Apply diff
+ws.apply_diff(diff_content, worktree)
+
+# Run tests
+success, stdout, stderr = ws.run_tests_in_worktree("pytest", worktree)
+
+# Merge or discard
+ws.merge_to_main(worktree)
+ws.discard_worktree(worktree)
+```
+
+### GraveyardManager
+
+```python
+from graveyard_manager import GraveyardManager
+
+gm = GraveyardManager()
+
+# Record failure
+gm.bury(
+    file_path="example.py",
+    diff_content=diff,
+    failure_type="unit_test",
+    failure_reason="Test failed"
+)
+
+# Get warnings for prompt
+warnings = gm.get_warning_prompt("example.py")
+
+# Check for duplicates
+is_dup = gm.is_duplicate_failure(diff)
+```
+
+### Benchmark Runner
+
+```python
+from tools.run_benchmark import (
+    run_alternating_benchmark,
+    calculate_stats,
+    compare_benchmarks
+)
+
+# Run A/B alternating pattern
+baseline, candidate = run_alternating_benchmark(
+    baseline_command="python old_code.py",
+    candidate_command="python new_code.py",
+    iterations_per_version=10
+)
+
+# Analyze
+baseline_stats = calculate_stats(baseline)
+candidate_stats = calculate_stats(candidate)
+comparison = compare_benchmarks(baseline_stats, candidate_stats, ...)
+
+print(comparison.recommendation)
+```
+
+## Contributing
+
+1. Add new optimization types to `propose_patch.py`
+2. Add new test generators to `generate_tests.py`
+3. Improve statistical analysis in `run_benchmark.py`
+
+## License
+
+MIT

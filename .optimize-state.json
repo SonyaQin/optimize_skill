@@ -1,12 +1,43 @@
 {
-  "iteration": 0,
-  "accepted": [],
-  "rejected": [],
-  "pending": [
-    "early_termination_optimization",
-    "local_variable_caching",
-    "reduce_range_overhead"
+  "iteration": 3,
+  "accepted": [
+    {
+      "name": "early_termination",
+      "description": "Add swapped flag to break early when array is sorted",
+      "improvement": {
+        "small_sorted": "98% faster",
+        "small_sorted_before": "0.000312s",
+        "small_sorted_after": "0.000006s"
+      }
+    }
   ],
-  "baseline": null,
-  "current": null
+  "rejected": [
+    {
+      "name": "local_variable_caching",
+      "description": "Replace range with while loop and cache limit",
+      "reason": "Made performance worse (2.52s → 2.88s)"
+    },
+    {
+      "name": "last_swap_tracking",
+      "description": "Track last swap position to reduce comparisons",
+      "reason": "Mixed results, no significant improvement"
+    }
+  ],
+  "pending": [],
+  "baseline": {
+    "small_sorted": "0.000312s",
+    "small_reverse": "0.000714s",
+    "small_random": "0.000514s",
+    "medium_random": "0.059858s",
+    "large_random": "6.339402s",
+    "overall": "2.392433s"
+  },
+  "current": {
+    "small_sorted": "0.000006s",
+    "small_reverse": "0.000756s",
+    "small_random": "0.000562s",
+    "medium_random": "0.059742s",
+    "large_random": "6.681409s",
+    "overall": "2.520629s"
+  }
 }
